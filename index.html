@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<!-- cloned from https://asliceofcuriosity.fr/assets/atom/orbitalsApp-Metropolis.html -->
+<html lang="en">
+
+<head>
+	<title>Atomic orbitals - Metropolis</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "./js/three.module.js"
+			}
+		}
+	</script>
+	<link rel=stylesheet href="css/base.css" />
+</head>
+
+<body>
+
+	<!-- <script src="dataset-100k/orbitals_posneg_metadata.js"></script> -->
+	<!-- <script src="dataset/orbitals_all_metadata.js"></script> -->
+	<script src="js/seedrandom.js"></script>
+
+	<!-- GUI for experimenting with values -->
+	<!-- <script type="text/javascript" src="js/DAT.GUI.min.js"></script> -->
+	<script type="text/javascript" src="js/dat.gui.js"></script>
+
+	<!-- Code to display an information button and box when clicked. -->
+	<script src="js/jquery-1.9.1.js"></script>
+	<script src="js/jquery-ui.js"></script>
+	<link rel=stylesheet href="css/jquery-ui.css" />
+	<link rel=stylesheet href="css/info.css" />
+	<script src="js/info.js"></script>
+	<div id="infoButton"></div>
+	<div id="infoBox" title="Information about the viewer for atomic orbitals">
+		<a href="https://asliceofcuriosity.fr/"><h2>Homepage</h2></a>
+		The original blog post is <a href="https://asliceofcuriosity.fr/blog/posts/rendering3.html">here</a>.
+		<h2>
+			Controls:
+		</h2>
+		<ul>
+			<li>Rotate: Left Mouse Button</li>
+			<li>Zoom: Mouse Wheel</li>
+			<li>Browsing through orbitals: Left/Right Arrows</li>
+		</ul>
+		
+		<h2>Credits:</h2>
+		<p>
+			This viewer was inspired by the video
+			<a href="https://www.youtube.com/watch?v=W2Xb2GFK2yc">A Better Way To Picture Atoms</a> by Henri Reich and his team from
+			<a href="https://www.youtube.com/@MinutePhysics">minutephysics</a>.
+		</p>
+		<p>
+			The sampling of the wave function follows the 
+			<a href="https://www.algorithm-archive.org/contents/metropolis/metropolis.html">Metropolis algorithm</a> and does not require to precompute the set of points from the cdf.</p>
+			Consequently, this version does not require extra data and can be computed for any wave function which pdf can be evaluated.
+		<p>
+			Some shader functions were taken from various places on <a href="https://www.shadertoy.com">Shadertoy</a>:
+			<ul>
+				<li><a href="https://www.shadertoy.com/view/3lBXR3">matplotlib colormaps + turbo</a></li>
+				<li><a href="https://www.shadertoy.com/view/lsS3Wc">HSV and HSL colormaps</a></li>
+				<li><a href="https://www.shadertoy.com/view/Nd3fR2">Twilight and coolwarm colormap</a></li>
+			</ul>
+		</p>
+		<p>Published on December 2022</p>
+	</div>
+	<!-- ------------------------------------------------------------ -->
+
+	<div id="ThreeJS" style="position: absolute; left:0px; top:0px"></div>
+
+
+	<!-- Import maps polyfill -->
+	<!-- Remove this when import maps will be widely supported -->
+	<script src="js/es-module-shims.js"></script>
+
+	<script type="module" src="orbitalsApp-Metropolis.js"></script>
+
+	<!-- override dat.gui styles -->
+	<link rel=stylesheet href="css/dg.css" />
+
+</body>
+
+</html>

@@ -1,0 +1,13 @@
+body 
+{
+	font-family: Monospace;
+	font-weight: bold;
+	/* background-color: #ffffff; */
+	/* background-color: #cccccc; */
+	background-color: #dddddd;
+	/* background-color: #191919; */
+	/* background-color: #19334C; */
+	/* background-image: url('../images/square2.png'); */
+	margin: 0px;
+	overflow: hidden;
+}
