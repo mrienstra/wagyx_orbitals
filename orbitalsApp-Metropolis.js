@@ -5,6 +5,7 @@ import {
 } from 'three/addons/controls/TrackballControls.js';
 
 import Stats from 'three/addons/libs/stats.module.js';
+import { VRButton } from 'three/addons/webxr/VRButton.js';
 ////////////////////////////////////////////////////////////////////////
 // MAIN
 ////////////////////////////////////////////////////////////////////////
@@ -346,7 +347,7 @@ const gClock = new THREE.Clock();
 gClock.start();
 init();
 // console.log("init", gClock.getElapsedTime());
-animate();
+gRenderer.setAnimationLoop(animationLoop);
 
 /////////////////////////////////////////////////////////////////////////////
 // FUNCTIONS 	
@@ -370,10 +371,13 @@ function init() {
     });
     gRenderer.setPixelRatio(window.devicePixelRatio);
     gRenderer.setSize(width,height);
+    gRenderer.xr.enabled = true;
     gRenderer.localClippingEnabled = gParameters.cutAway;
 
     gStats = new Stats();
     document.body.appendChild(gStats.dom);
+
+    document.body.appendChild( VRButton.createButton( gRenderer ) );
 
     gContainer = document.getElementById('ThreeJS');
     gContainer.appendChild(gRenderer.domElement);
@@ -746,8 +750,7 @@ function updateColor(obj) {
     }
 }
 
-function animate() {
-    requestAnimationFrame(animate);
+function animationLoop(time, frame) {
     update();
     render();
     gStats.update();
