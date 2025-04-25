@@ -11,7 +11,7 @@ import { VRButton } from 'three/addons/webxr/VRButton.js';
 ////////////////////////////////////////////////////////////////////////
 
 // standard global variables
-let gContainer, gScene, gCamera, gRenderer, gControls, gInfoGui, gStats;
+let gContainer, gScene, gGroup, gCameraRig, gCamera, gRenderer, gControls, gInfoGui, gStats, gInXR;
 let gNameToInd, gCurrInd;
 let gElapsedTime = 0;
 
@@ -30,7 +30,7 @@ const gCoeffAlengendreKL = preComputeCoeffAlegendre(nMax);
 const gCoeffSharmonicsLM = preComputeCoeffSharmonics(nMax);
 const gCoeffHWF = preComputeCoeffHWF(nMax);
 const gcCamZ = {
-    pos: [30, 0, 10],
+    pos: [10, 0, 3],
     up: [0, 0, 1],
     target: [0, 0, 0]
 };
@@ -363,8 +363,14 @@ function init() {
     const near = 0.1;
     const far = 5000;
     gCamera = new THREE.PerspectiveCamera(viewAngle, width / height, near, far);
-    gScene.add(gCamera);
+    gCameraRig = new THREE.Group();
+    gCameraRig.rotation.order = 'YXZ';
+    gCameraRig.add(gCamera);
+    gScene.add(gCameraRig);
     resetCamera();
+
+    gGroup = new THREE.Group();
+    gScene.add(gGroup);
 
     // RENDERER
     gRenderer = new THREE.WebGLRenderer({
@@ -373,6 +379,17 @@ function init() {
     gRenderer.setPixelRatio(window.devicePixelRatio);
     gRenderer.setSize(width,height);
     gRenderer.xr.enabled = true;
+    gRenderer.xr.addEventListener('sessionstart', () => {
+        console.log('xr sessionstart');
+        gInXR = true;
+        resetCamera();
+        gCameraRig.rotation.y = Math.PI / 2;
+        gCameraRig.rotation.z = Math.PI / 2;
+    });
+    gRenderer.xr.addEventListener('sessionend', () => {
+        console.log('xr sessionend');
+        gInXR = false;
+    });
     gRenderer.localClippingEnabled = gParameters.cutAway;
 
     gStats = new Stats();
@@ -606,7 +623,7 @@ function init() {
         // gOrbitalMesh.add(refFrame);
     // }
 
-    gScene.add(gOrbitalMesh);
+    gGroup.add(gOrbitalMesh);
 
     gParameters.sliderN = obj0.n;
     gParameters.sliderL = obj0.l;
@@ -619,6 +636,8 @@ function init() {
 
     document.addEventListener("keydown", onDocumentKeyDown, false);
     window.addEventListener('resize', onWindowResize);
+
+    setupRotationPrompt();
 } // end of function init()
 
 /////////////////////////////////////////////
@@ -1218,7 +1237,98 @@ function mapColor(t, colorsmap) {
 }
 
 function resetCamera() {
-    gCamera.position.set(...gcCamZ.pos);
+    (gInXR ? gCameraRig : gCamera).position.set(...gcCamZ.pos);
+    gCameraRig.rotation.set(0, 0, 0);
+    gCamera.rotation.set(0, 0, 0);
     gCamera.up.set(...gcCamZ.up);
     gCamera.lookAt(...gcCamZ.target);
+}
+
+async function applyRotation(command) {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        const axis = command[0];
+        const direction = command[1];
+        let angle = Math.PI / 2;
+
+        if (direction === 'm') {
+            angle *= -1;
+        }
+
+        switch (axis) {
+          case 'x':
+            gCameraRig.rotation.x += angle;
+            break;
+          case 'y':
+            gCameraRig.rotation.y += angle;
+            break;
+          case 'z':
+            gCameraRig.rotation.z += angle;
+            break;
+          case 's':
+            if (direction === 'p') {
+                gGroup.scale.set(4, 4, 4);
+            } else if (direction === 'l') {
+                gGroup.scale.set(2, 2, 2);
+            } else if (direction === 'n') {
+                gGroup.scale.set(1, 1, 1);
+            } else if (direction === 's') {
+                gGroup.scale.set(0.5, 0.5, 0.5);
+            } else { // m = micro
+                gGroup.scale.set(0.25, 0.25, 0.25);
+            }
+            break;
+          default:
+            console.warn("Invalid axis:", axis);
+        }
+        resolve();
+      }, 2000);
+    });
+}
+
+async function rotationPrompt(){
+    const text = prompt("Enter a sequence of 2-character rotation or scale commands (e.g., xpzmsl)");
+    
+    if (!text) {
+        console.log("No input received.");
+        return;
+    }
+
+    const rotations = [];
+    for (let i = 0; i < text.length; i += 2) {
+        console.log(i, text.substring(i, i + 2));
+        if (i + 1 < text.length) {
+            const rotation = text.substring(i, i + 2);
+            if (/[xyz][pm]/.test(rotation) || /s[plnsm]/.test(rotation)) {
+                rotations.push(rotation);
+            } else {
+                console.warn("malformed:", rotation);
+            }
+        } else {
+            console.warn("Ignoring last odd character:", text[i]);
+        }
+    }
+
+    if (rotations.length === 0) {
+        console.log("No valid rotation commands found.");
+        return;
+    }
+
+    await new Promise(res => setTimeout(res, 4000));
+    
+    for (const rotation of rotations) {
+        await applyRotation(rotation);
+        // gRenderer.render(scene, camera);
+    }
+    console.log("All rotations complete.");
+}
+
+function setupRotationPrompt(){
+    const btn = document.createElement('button');
+    btn.innerText = 'P';
+    btn.style.position = 'absolute';
+    btn.style.bottom = '10px';
+    btn.style.right = '10px';
+    btn.addEventListener('click', rotationPrompt);
+    document.body.appendChild(btn);
 }
