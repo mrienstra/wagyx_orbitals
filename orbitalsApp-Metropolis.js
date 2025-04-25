@@ -336,6 +336,7 @@ const gParameters = {
     inverseColormap: false,
     backgroundLevel: 0.85,
     quantity: gQuantityNames["Modulus"],
+    quantityController: {}, // OptionController
     sliderN: 2,
     sliderL: 1,
     sliderM: 1,
@@ -463,12 +464,7 @@ function init() {
             updateCount(ORBITALS[gCurrInd]);
         });
 
-    optionsFd.add(gParameters, 'quantity', gQuantityNames).name("Wave function").onChange(function () {
-        const obj = ORBITALS[gCurrInd]
-        updateMinMax(obj);
-        gInfoGui.name(makeInfoHtml(obj));
-        gParameters.needsColorUpdate = true;
-    });
+    gParameters.quantityController = optionsFd.add(gParameters, 'quantity', gQuantityNames).name("Wave function").onChange(updateQuantity);
 
     optionsFd.add(gParameters, 'colormap', gColorMapNames).name("Color map").onChange(function () {
         gParameters.needsColorUpdate = true;
@@ -904,6 +900,13 @@ function updateOrbital(obj) {
     }
 }
 
+function updateQuantity() {
+    const obj = ORBITALS[gCurrInd];
+    updateMinMax(obj);
+    gInfoGui.name(makeInfoHtml(obj));
+    gParameters.needsColorUpdate = true;
+}
+
 function positiveModulo(a, n) {
     return ((a % n) + n) % n;
 }
@@ -911,9 +914,11 @@ function positiveModulo(a, n) {
 function onDocumentKeyDown(event) {
     const keyCode = event.which;
     if (keyCode == 38) {
-        //up arrow key
+        // up arrow key - cycle to previous wave function
+        cycleQuantity(-1);
     } else if (keyCode == 40) {
-        // down arrow key
+        // down arrow key - cycle to next wave function
+        cycleQuantity(1);
     } else if (keyCode == 37) {
         // left arrow key
         cycleOrbital(-1);
@@ -929,6 +934,32 @@ function cycleOrbital(direction) {
     gParameters.sliderL = obj.l;
     gParameters.sliderM = obj.m;
     updateOrbital(obj);
+}
+
+function cycleQuantity(direction) {
+    let currentDisplayName = null;
+    for (const displayName in gQuantityNames) {
+        if (gQuantityNames[displayName] === gParameters.quantity) {
+            currentDisplayName = displayName;
+            break;
+        }
+    }
+    
+    if (!currentDisplayName) return;
+    
+    const quantityDisplayNames = Object.keys(gQuantityNames);
+    const currentIndex = quantityDisplayNames.indexOf(currentDisplayName);
+    if (currentIndex === -1) return;
+    
+    const newIndex = positiveModulo(currentIndex + direction, quantityDisplayNames.length);
+    const newDisplayName = quantityDisplayNames[newIndex];
+    const newQuantity = gQuantityNames[newDisplayName];
+    
+    gParameters.quantity = newQuantity;
+    
+    updateQuantity();
+    
+    gParameters.quantityController.updateDisplay();
 }
 
 function loadImage(obj) {
