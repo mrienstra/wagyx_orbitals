@@ -2,9 +2,9 @@
 import * as THREE from 'three';
 import {
     TrackballControls
-} from './js/TrackballControls.js';
+} from 'three/addons/controls/TrackballControls.js';
 
-import Stats from './js/libs/stats.module.js';
+import Stats from 'three/addons/libs/stats.module.js';
 ////////////////////////////////////////////////////////////////////////
 // MAIN
 ////////////////////////////////////////////////////////////////////////
@@ -370,7 +370,6 @@ function init() {
     });
     gRenderer.setPixelRatio(window.devicePixelRatio);
     gRenderer.setSize(width,height);
-    gRenderer.physicallyCorrectLights = true;
     gRenderer.localClippingEnabled = gParameters.cutAway;
 
     gStats = new Stats();
@@ -382,6 +381,7 @@ function init() {
     // CONTROLS
     gControls = new TrackballControls(gCamera, gRenderer.domElement);
     gControls.noPan = true;
+    gControls.connect(gRenderer.domElement);
 
     /////////////////////////////////////////////////////////////////////////////
     // CUSTOM //
