@@ -916,22 +916,20 @@ function onDocumentKeyDown(event) {
         // down arrow key
     } else if (keyCode == 37) {
         // left arrow key
-        gCurrInd = positiveModulo(gCurrInd - 1, ORBITALS.length);
-        const obj = ORBITALS[gCurrInd];
-        gParameters.sliderN = obj.n;
-        gParameters.sliderL = obj.l;
-        gParameters.sliderM = obj.m;
-        updateOrbital(obj);
+        cycleOrbital(-1);
     } else if (keyCode == 39) {
-        // the right arrow
-        gCurrInd = positiveModulo(gCurrInd + 1, ORBITALS.length);
-        const obj = ORBITALS[gCurrInd];
-        gParameters.sliderN = obj.n;
-        gParameters.sliderL = obj.l;
-        gParameters.sliderM = obj.m;
-        updateOrbital(obj);
+        cycleOrbital(1);
     }
 };
+
+function cycleOrbital(direction) {
+    gCurrInd = positiveModulo(gCurrInd + direction, ORBITALS.length);
+    const obj = ORBITALS[gCurrInd];
+    gParameters.sliderN = obj.n;
+    gParameters.sliderL = obj.l;
+    gParameters.sliderM = obj.m;
+    updateOrbital(obj);
+}
 
 function loadImage(obj) {
     const a0 = 1;
